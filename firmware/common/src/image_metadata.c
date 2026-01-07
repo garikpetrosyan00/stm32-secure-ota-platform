@@ -1,6 +1,7 @@
 #include "image_metadata.h"
 #include "flash_if.h"
-#include <string.h>
+#include "crc32.h"
+#include <string.h> /* For memset/memcpy */
 
 void image_metadata_init_header(image_header_t *header) {
     if (header) {
@@ -41,17 +42,43 @@ status_t image_metadata_write(flash_region_t slot_region, const image_header_t *
     return STATUS_OK;
 }
 
-bool image_metadata_verify_header(const image_header_t *header) {
+bool image_metadata_verify_header(flash_region_t region, const image_header_t *header) {
     if (!header) {
         return false;
     }
-
+    
     if (header->magic != IMAGE_HEADER_MAGIC) {
         return false;
     }
+    
+    if (header->image_size == 0 || header->image_size > (512 * 1024)) { /* Sanity max size, e.g., 512KB */
+        return false;
+    }
 
+    /* Verify CRC of the image payload */
+    uint32_t calculated_crc = 0xFFFFFFFF; /* Standard seed */
+    uint8_t buffer[256]; /* Small buffer for reading chunks */
+    uint32_t bytes_processed = 0;
+    uint32_t image_offset = IMAGE_HEADER_SIZE; /* Image payload starts after the header */
 
-    /* TODO: Add more checks (size sanity, version sanity) */
+    while (bytes_processed < header->image_size) {
+        uint32_t bytes_to_read = sizeof(buffer);
+        if ((header->image_size - bytes_processed) < bytes_to_read) {
+            bytes_to_read = header->image_size - bytes_processed;
+        }
+
+        flash_status_t f_status = flash_read(region, image_offset + bytes_processed, buffer, bytes_to_read);
+        if (f_status != FLASH_OK) {
+            return false; /* Failed to read image data */
+        }
+
+        calculated_crc = crc32_compute(buffer, bytes_to_read, calculated_crc);
+        bytes_processed += bytes_to_read;
+    }
+
+    if (calculated_crc != header->crc) {
+        return false; /* CRC mismatch */
+    }
 
     return true;
 }

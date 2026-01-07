@@ -12,7 +12,7 @@ This platform provides a foundational implementation of a clean, hardware-agnost
 *   **Fail-Safe Updates:** Implements atomic state transitions to prevent bricking during power loss or update failures.
 *   **Trial Boot & Rollback:** Newly installed images enter a "Trial" state. If the application fails to confirm its health (e.g., due to a crash or watchdog reset), the bootloader automatically rolls back to the previous known-good image.
 *   **Application-Driven Confirmation:** The application firmware explicitly confirms a successful boot, ensuring that only fully functional updates are committed.
-*   **Metadata-Based Validation:** Uses structured image headers and metadata for integrity checks and state management.
+*   **Metadata-Based Validation:** Uses structured image headers and **CRC32 integrity checks** to ensure firmware is not corrupted before booting.
 *   **Host OTA CLI:** A dedicated Linux command-line tool for packaging firmware and simulating transport.
 *   **Modular Design:** Clean separation between the Bootloader, Application, and Common shared logic implementation.
 
@@ -105,9 +105,9 @@ Simulates sending the package over a serial port.
 
 ## 8. Current Limitations
 
-This repository is a **foundational reference implementation**. The following features are intentionally stubbed or omitted for clarity and platform-agnosticism:
+This repository is a **foundational reference implementation** released as **v1.0.0**. The following features are intentionally stubbed or omitted for clarity and platform-agnosticism:
 
-*   **No Cryptography**: CRC32 is stubbed; cryptographic signature verification (ECDSA/RSA) is not implemented.
+*   **No Cryptography**: CRC32 is used for basic integrity verification. Cryptographic signature verification (ECDSA/RSA) is **not** implemented in this version.
 *   **No HAL Integration**: Flash erase/write operations are simulated. Users must implement `flash_if.c` using their specific MCU's HAL (e.g., STM32 HAL/LL).
 *   **No Hardware Watchdog**: The rollback logic relies on a reset occurring, but the hardware watchdog configuration is left as a TODO.
 *   **No Physical Transport**: The `ota-transport` layer is a logging stub and does not actually drive UART/USB/Network interfaces.

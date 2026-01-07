@@ -54,13 +54,14 @@ status_t image_metadata_read(flash_region_t slot_region, image_header_t *header)
 status_t image_metadata_write(flash_region_t slot_region, const image_header_t *header);
 
 /**
- * @brief Validate the header magic and basic fields.
+ * @brief Verify image header integrity (Magic, CRC, Size).
+ *        Reads the image payload from the specified slot to verify CRC.
  * 
- * @param header Pointer to header.
- * @return true If magic matches.
- * @return false If invalid.
+ * @param region Flash slot region (SLOT_A or SLOT_B).
+ * @param header Pointer to header struct to check.
+ * @return true if valid, false otherwise.
  */
-bool image_metadata_verify_header(const image_header_t *header);
+bool image_metadata_verify_header(flash_region_t region, const image_header_t *header);
 
 /**
  * @brief Mark an image in a slot as TRIAL (Boot attempt).

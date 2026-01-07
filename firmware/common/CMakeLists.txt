@@ -3,6 +3,7 @@ add_library(common STATIC
     src/flash_if.c
     src/image_metadata.c
     src/boot_confirm.c
+    src/crc32.c
 )
 
 target_include_directories(common PUBLIC

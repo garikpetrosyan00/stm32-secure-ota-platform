@@ -45,12 +45,18 @@ void boot_manager_run(void) {
                     header_slot_b.state = IMAGE_STATE_INVALID;
                 }
 
-                /* TODO: Verify headers (Magic, CRC, Signature) */
-                bool a_valid = image_metadata_verify_header(&header_slot_a);
-                bool b_valid = image_metadata_verify_header(&header_slot_b);
+                /* Verify headers (Magic, CRC, Signature) using new API */
+                bool a_valid = image_metadata_verify_header(FLASH_REGION_SLOT_A, &header_slot_a);
+                bool b_valid = image_metadata_verify_header(FLASH_REGION_SLOT_B, &header_slot_b);
 
-                if (!a_valid) header_slot_a.state = IMAGE_STATE_INVALID;
-                if (!b_valid) header_slot_b.state = IMAGE_STATE_INVALID;
+                if (!a_valid) {
+                    log_state("Slot A Invalid (CRC/Magic Fail)");
+                    header_slot_a.state = IMAGE_STATE_INVALID;
+                }
+                if (!b_valid) {
+                    log_state("Slot B Invalid (CRC/Magic Fail)");
+                    header_slot_b.state = IMAGE_STATE_INVALID;
+                }
                 
                 transition_to(BL_STATE_SELECT_SLOT);
                 break;
