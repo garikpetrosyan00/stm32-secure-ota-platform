@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "common_defs.h"
+#include "flash_if.h"
 
 #define IMAGE_HEADER_MAGIC      0x96F3B83D
 #define IMAGE_HEADER_SIZE       1024
@@ -41,7 +42,7 @@ void image_metadata_init_header(image_header_t *header);
  * @param header Destination structure.
  * @return status_t 
  */
-status_t image_metadata_read(int slot_region, image_header_t *header);
+status_t image_metadata_read(flash_region_t slot_region, image_header_t *header);
 
 /**
  * @brief Write image header to a specific slot.
@@ -50,7 +51,7 @@ status_t image_metadata_read(int slot_region, image_header_t *header);
  * @param header Source structure.
  * @return status_t 
  */
-status_t image_metadata_write(int slot_region, const image_header_t *header);
+status_t image_metadata_write(flash_region_t slot_region, const image_header_t *header);
 
 /**
  * @brief Validate the header magic and basic fields.

@@ -11,9 +11,6 @@
 #define FLASH_SLOT_B_START      0x08080000
 #define FLASH_SLOT_B_SIZE       (480 * 1024)
 
-#define FLASH_STORAGE_START     0x080F8000
-#define FLASH_STORAGE_SIZE      (32 * 1024)
-
 typedef struct {
     flash_addr_t start;
     flash_size_t size;
@@ -25,10 +22,8 @@ static const region_config_t region_map[FLASH_REGION_MAX] = {
     [FLASH_REGION_BOOTLOADER] = { FLASH_BOOTLOADER_START, FLASH_BOOTLOADER_SIZE, false, false }, /* Protected */
     [FLASH_REGION_SLOT_A]     = { FLASH_SLOT_A_START,     FLASH_SLOT_A_SIZE,     true,  true  },
     [FLASH_REGION_SLOT_B]     = { FLASH_SLOT_B_START,     FLASH_SLOT_B_SIZE,     true,  true  },
-    [FLASH_REGION_STORAGE]    = { FLASH_STORAGE_START,    FLASH_STORAGE_SIZE,    true,  true  },
-    /* Metadata regions aliased to start of slots for this basic map */
-    [FLASH_REGION_METADATA_A] = { FLASH_SLOT_A_START,     1024,                  true,  true  },
-    [FLASH_REGION_METADATA_B] = { FLASH_SLOT_B_START,     1024,                  true,  true  },
+    /* Metadata region is currently undefined in basic map, but available for custom use */
+    [FLASH_REGION_METADATA]   = { 0,                      0,                     false, false },
 };
 
 static bool is_valid_region(flash_region_t region) {

@@ -1,5 +1,6 @@
 add_executable(bootloader
     src/main.c
+    src/boot_manager.c
 )
 
 target_include_directories(bootloader PRIVATE

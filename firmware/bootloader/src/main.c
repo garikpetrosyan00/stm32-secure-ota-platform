@@ -1,18 +1,16 @@
-#include "bootloader.h"
+#include "boot_manager.h"
 #include <stdio.h> /* For TODO logging */
 
-void bootloader_run(void) {
-    /* TODO: Implement bootloader logic */
-    /* 1. Hardware Init */
-    /* 2. Check for update request */
-    /* 3. Verify images */
-    /* 4. Jump to application or perform update */
-}
-
 int main(void) {
-    /* TODO: System Initialization */
+    /* TODO: System Initialization (HAL_Init, Clock Setup) */
     
-    bootloader_run();
+    printf("--- Bootloader Started ---\n");
+
+    boot_manager_init();
+    boot_manager_run();
+    
+    /* Should not reach here */
+    while(1);
     
     return 0;
 }

@@ -9,14 +9,14 @@ void image_metadata_init_header(image_header_t *header) {
     }
 }
 
-status_t image_metadata_read(int slot_region, image_header_t *header) {
+status_t image_metadata_read(flash_region_t slot_region, image_header_t *header) {
     if ((slot_region != FLASH_REGION_SLOT_A && slot_region != FLASH_REGION_SLOT_B) || !header) {
         return STATUS_ERROR_GENERIC;
     }
 
     /* Read header from the start of the slot */
     /* Assuming header is at offset 0 of the slot */
-    flash_status_t f_status = flash_read((flash_region_t)slot_region, 0, (uint8_t*)header, sizeof(image_header_t));
+    flash_status_t f_status = flash_read(slot_region, 0, (uint8_t*)header, sizeof(image_header_t));
     
     if (f_status != FLASH_OK) {
         return STATUS_ERROR_GENERIC;
@@ -25,14 +25,14 @@ status_t image_metadata_read(int slot_region, image_header_t *header) {
     return STATUS_OK;
 }
 
-status_t image_metadata_write(int slot_region, const image_header_t *header) {
+status_t image_metadata_write(flash_region_t slot_region, const image_header_t *header) {
     if ((slot_region != FLASH_REGION_SLOT_A && slot_region != FLASH_REGION_SLOT_B) || !header) {
         return STATUS_ERROR_GENERIC;
     }
 
     /* Write header to the start of the slot */
     /* Note: Flash must be erased before writing if not already */
-    flash_status_t f_status = flash_write((flash_region_t)slot_region, 0, (const uint8_t*)header, sizeof(image_header_t));
+    flash_status_t f_status = flash_write(slot_region, 0, (const uint8_t*)header, sizeof(image_header_t));
 
     if (f_status != FLASH_OK) {
         return STATUS_ERROR_GENERIC;

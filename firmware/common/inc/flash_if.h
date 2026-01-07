@@ -13,9 +13,7 @@ typedef enum {
     FLASH_REGION_BOOTLOADER = 0,
     FLASH_REGION_SLOT_A,
     FLASH_REGION_SLOT_B,
-    FLASH_REGION_STORAGE,
-    FLASH_REGION_METADATA_A, /* Optional: if metadata is separate */
-    FLASH_REGION_METADATA_B,
+    FLASH_REGION_METADATA,
     FLASH_REGION_MAX
 } flash_region_t;
 
