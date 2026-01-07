@@ -42,8 +42,11 @@ The Bootloader physically exchanges the contents of Slot A and Slot B using a sc
 ### Scenario A: Success (Commit)
 1. New Application starts up.
 2. Performs self-test (Check peripherals, init RAM).
-3. **Application Action**: Writes "Image OK" (Permanent/Confirmed) flag to Slot A Trailer.
-4. Future boots will stay in this image.
+3. **Application Action**: Calls `boot_confirm_running_image()`.
+   - Reads metadata.
+   - If state is TRIAL, changes it to CONFIRMED.
+   - Writes updated metadata to flash.
+4. Future boots will see CONFIRMED state and skip watchdog/rollback logic.
 
 ### Scenario B: Failure (Rollback)
 1. New Application crashes (Watchdog) OR fails self-test OR simply resets without setting "Image OK".
