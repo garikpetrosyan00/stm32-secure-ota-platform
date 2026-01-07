@@ -57,32 +57,70 @@ void boot_manager_run(void) {
 
             case BL_STATE_SELECT_SLOT:
                 log_state("State: SELECT_SLOT");
-                /* Simple logic: Prefer CONFIRMED, then valid PENDING/TRIAL */
-                /* For this skeleton, we just pick Slot A if valid, else B, else ERROR */
                 
-                /* Real logic for rollback/swap would check PENDING state in Slot B */
-                if (header_slot_b.state == IMAGE_STATE_PENDING) {
-                     /* TODO: Handle Swap Request */
-                     log_state("Update Pending in Slot B. (Swap TODO)");
+                /* Selection Priority:
+                   1. Slot A if CONFIRMED
+                   2. Slot A if TRIAL
+                   3. Slot B if PENDING (Trigger Swap/Update) -> Not handled fully in this logic, assuming usage of A as primary
+                   4. Slot B if CONFIRMED/VALID and Slot A invalid
+                */
+
+                /* Hypothetical Rollback Check */
+                if (header_slot_a.state == IMAGE_STATE_INVALID && header_slot_b.state == IMAGE_STATE_CONFIRMED) {
+                    /* A is bad, B is good. Fallback to B. */
+                    active_slot = FLASH_REGION_SLOT_B;
+                    log_state("Rollback to Slot B (A is INVALID)");
+                    transition_to(BL_STATE_PREPARE_BOOT);
+                    break;
                 }
 
-                if (header_slot_a.state != IMAGE_STATE_INVALID) {
+                if (header_slot_a.state == IMAGE_STATE_CONFIRMED) {
                     active_slot = FLASH_REGION_SLOT_A;
-                    log_state("Selected Slot A");
+                    log_state("Booting Slot A (CONFIRMED)");
                     transition_to(BL_STATE_PREPARE_BOOT);
-                } else if (header_slot_b.state != IMAGE_STATE_INVALID) {
-                    active_slot = FLASH_REGION_SLOT_B;
-                    log_state("Selected Slot B (Fallback)");
+                } else if (header_slot_a.state == IMAGE_STATE_TRIAL) {
+                    /* Decrement counter would go here */
+                    active_slot = FLASH_REGION_SLOT_A;
+                    log_state("Booting Slot A (TRIAL - Attempt 1/1)");
                     transition_to(BL_STATE_PREPARE_BOOT);
+                } else if (header_slot_a.state == IMAGE_STATE_PENDING) {
+                    /* First boot after update, mark as TRIAL */
+                    log_state("New Update in Slot A (PENDING -> TRIAL)");
+                    if (image_metadata_mark_trial(FLASH_REGION_SLOT_A) != STATUS_OK) {
+                        log_state("Failed to mark TRIAL");
+                        transition_to(BL_STATE_ERROR);
+                    } else {
+                        /* Reload header to get new state */
+                        image_metadata_read(FLASH_REGION_SLOT_A, &header_slot_a);
+                        active_slot = FLASH_REGION_SLOT_A;
+                        transition_to(BL_STATE_PREPARE_BOOT);
+                    }
                 } else {
-                    log_state("No valid images found!");
-                    transition_to(BL_STATE_ERROR);
+                    /* Slot A is Empty/Invalid, check Slot B */
+                    if (header_slot_b.state != IMAGE_STATE_INVALID && header_slot_b.state != IMAGE_STATE_EMPTY) {
+                         active_slot = FLASH_REGION_SLOT_B;
+                         log_state("Booting Slot B (Fallback)");
+                         transition_to(BL_STATE_PREPARE_BOOT);
+                    } else {
+                        log_state("No valid images found!");
+                        transition_to(BL_STATE_ERROR);
+                    }
                 }
                 break;
 
             case BL_STATE_PREPARE_BOOT:
                 log_state("State: PREPARE_BOOT");
                 /* TODO: Disable interrupts, reset peripherals, relocate vector table */
+                
+                /* Emulate a fail safe: If we are booting TRIAL, and this was real hardware, 
+                   we would enable a watchdog here. If the app doesn't mark CONFIRMED within X seconds,
+                   the watchdog resets, and on next boot we see TRIAL again (or decrement counter).
+                   If counter == 0, we mark INVALID.
+                */
+                if (active_slot == FLASH_REGION_SLOT_A && header_slot_a.state == IMAGE_STATE_TRIAL) {
+                     log_state("Watchdog Enabled for TRIAL boot.");
+                }
+
                 transition_to(BL_STATE_BOOT);
                 break;
 

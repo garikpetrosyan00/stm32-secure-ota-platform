@@ -62,4 +62,28 @@ status_t image_metadata_write(flash_region_t slot_region, const image_header_t *
  */
 bool image_metadata_verify_header(const image_header_t *header);
 
+/**
+ * @brief Mark an image in a slot as TRIAL (Boot attempt).
+ * 
+ * @param slot_region Target slot.
+ * @return status_t 
+ */
+status_t image_metadata_mark_trial(flash_region_t slot_region);
+
+/**
+ * @brief Mark an image in a slot as CONFIRMED (Permanent).
+ * 
+ * @param slot_region Target slot.
+ * @return status_t 
+ */
+status_t image_metadata_mark_confirmed(flash_region_t slot_region);
+
+/**
+ * @brief Mark an image in a slot as INVALID.
+ * 
+ * @param slot_region Target slot.
+ * @return status_t 
+ */
+status_t image_metadata_mark_invalid(flash_region_t slot_region);
+
 #endif /* IMAGE_METADATA_H */
